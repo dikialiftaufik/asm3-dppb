@@ -1,16 +1,107 @@
-# tubes
+# Dokumentasi Tugas Besar
 
-A new Flutter project.
+**Nama Proyek:** The Komar's
+**Anggota:** 607012400005 - Diki Alif Taufik
+607012400032 - Ega Fiandra Pratama
+607012400093 - Ahmad Zufar Fathoni
 
-## Getting Started
+Dokumen ini berisi rincian fitur dan implementasi teknis yang telah dikerjakan oleh **Diki Alif Taufik** dalam proyek kelompok ini. Dokumentasi mencakup alur autentikasi, manajemen profil, serta fitur pendukung lainnya.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠 Tech Stack & Dependencies
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Aplikasi ini dibangun menggunakan teknologi dan *package* berikut:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* **Framework:** Flutter (SDK ^3.9.2)
+* **Networking:** `http` (^1.2.0) - Untuk komunikasi dengan REST API.
+* **Local Storage:** `shared_preferences` (^2.2.2) - Untuk menyimpan token autentikasi sesi pengguna.
+* **Media:** `image_picker` (^1.0.7) - Untuk mengambil foto dari galeri.
+* **Formatting:** `intl` (^0.19.0) - Untuk format tanggal.
+* **UI/Assets:** `google_fonts`, `flutter_svg`.
+
+---
+
+## 🚀 Fitur & Implementasi Teknis
+
+### 1. Fitur Autentikasi (Authentication)
+
+Modul ini menangani keamanan akses pengguna mulai dari masuk hingga pemulihan akun.
+
+#### a. Login
+* **Deskripsi:** Memungkinkan pengguna masuk menggunakan email dan password.
+* **Implementasi UI:** * Form input dengan validasi.
+    * **Alert Dialog:** Menampilkan pesan "Login Gagal" jika kredensial salah.
+* **Logika & Navigasi:**
+    * **Replacement Navigation:** Menggunakan `pushReplacement` saat login sukses agar pengguna tidak bisa kembali ke halaman login dengan tombol *back*.
+    * **Penyimpanan Token:** Token akses disimpan lokal menggunakan `SharedPreferences`.
+* **Integrasi API:**
+    * **Method:** `POST`
+    * **Endpoint:** `/login`
+
+#### b. Register
+* **Deskripsi:** Pendaftaran akun baru untuk pengguna.
+* **Implementasi UI:**
+    * Menggunakan `TextFormField` dengan validator (memastikan password dan konfirmasi password cocok).
+    * Dialog sukses dengan tombol pintas menuju halaman Login.
+* **Integrasi API:**
+    * **Method:** `POST`
+    * **Endpoint:** `/register`
+    * **Data:** Mengirim `name`, `email`, `password`, `password_confirmation`, dan `role` (default: 'pembeli').
+
+#### c. Forgot Password & Reset Password
+* **Deskripsi:** Alur pemulihan akun jika pengguna lupa kata sandi.
+* **Highlight Fitur:**
+    * **Auto-Copy Token:** Pada halaman *Forgot Password*, sistem menampilkan token dalam *Custom Alert Dialog* yang otomatis menyalin token ke *clipboard* pengguna.
+    * **Clear Stack Navigation:** Setelah *Reset Password* berhasil, navigasi menghapus riwayat halaman (`pushAndRemoveUntil`) untuk memaksa login ulang.
+* **Integrasi API:**
+    * **Forgot:** `POST` ke `/forgot-password`.
+    * **Reset:** `POST` ke `/reset-password` (mengirim token validasi).
+
+---
+
+### 2. Manajemen Profil Pengguna
+
+#### a. Lihat Profil (My Profile)
+* **Deskripsi:** Menampilkan informasi detail pengguna yang sedang login.
+* **Implementasi UI:**
+    * **Stack Layout:** Digunakan untuk memposisikan foto profil menumpuk di atas elemen *background* secara estetis.
+* **Integrasi API:**
+    * **Method:** `GET`
+    * **Endpoint:** `/user` (Menggunakan Header `Authorization: Bearer <token>`).
+
+#### b. Edit Profil
+* **Deskripsi:** Memperbarui data diri (Nama, Email) dan Foto Profil.
+* **Implementasi Teknis:**
+    * **Multipart Request:** Menggunakan `http.MultipartRequest` karena pengiriman data bersifat campuran antara teks (nama, email) dan file biner (foto).
+    * **Image Picker:** Integrasi widget untuk memilih foto dari galeri perangkat.
+* **Integrasi API:**
+    * **Method:** `POST` (Multipart)
+    * **Endpoint:** `/user/update`
+
+#### c. Logout
+* **Deskripsi:** Keluar dari aplikasi dan menghapus sesi.
+* **Logika:** Menghapus data token dari `SharedPreferences` dan memanggil endpoint logout di server.
+
+---
+
+### 3. Fitur Pendukung
+
+#### a. Notifikasi (Notifications)
+* **Deskripsi:** Menampilkan daftar informasi terkini dari restoran (promo, jadwal, dll).
+* **Implementasi UI:**
+    * **ListView.separated:** Digunakan untuk merender daftar notifikasi secara dinamis dengan garis pemisah.
+    * **State Management:** Menangani tampilan *Empty State* (saat data kosong) vs tampilan data tersedia.
+* **Integrasi API:**
+    * **Method:** `GET`
+    * **Endpoint:** `/notifications`
+
+#### b. Feedback (Kirim Masukan)
+* **Deskripsi:** Pengguna dapat mengirimkan kritik/saran beserta bukti foto.
+* **Implementasi UI:**
+    * **DropdownButton:** Untuk memilih kategori masukan.
+    * **Text Area:** Input multiline untuk pesan panjang.
+* **Integrasi API:**
+    * **Method:** `POST` (Multipart)
+    * **Endpoint:** `/feedback`
+    * **Parameter:** `kategori_masukan`, `pesan_masukan`, dan file `bukti_foto`.
