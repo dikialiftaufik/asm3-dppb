@@ -1,11 +1,9 @@
 # Dokumentasi Tugas Besar
 
 **Nama Proyek:** The Komar's
-**Anggota:** 607012400005 - Diki Alif Taufik
-607012400032 - Ega Fiandra Pratama
-607012400093 - Ahmad Zufar Fathoni
-
-Dokumen ini berisi rincian fitur dan implementasi teknis yang telah dikerjakan oleh **Diki Alif Taufik** dalam proyek kelompok ini. Dokumentasi mencakup alur autentikasi, manajemen profil, serta fitur pendukung lainnya.
+* 607012400005 - Diki Alif Taufik
+* 607012400032 - Ega Fiandra Pratama
+* 607012400093 - Ahmad Zufar Fathoni
 
 ---
 
@@ -22,7 +20,7 @@ Aplikasi ini dibangun menggunakan teknologi dan *package* berikut:
 
 ---
 
-## 🚀 Fitur & Implementasi Teknis
+## 🚀 Rincian fitur yang telah dikerjakan oleh **Diki Alif Taufik**:
 
 ### 1. Fitur Autentikasi (Authentication)
 
@@ -105,3 +103,11 @@ Modul ini menangani keamanan akses pengguna mulai dari masuk hingga pemulihan ak
     * **Method:** `POST` (Multipart)
     * **Endpoint:** `/feedback`
     * **Parameter:** `kategori_masukan`, `pesan_masukan`, dan file `bukti_foto`.
+
+---
+
+## 🚀 Rincian fitur yang telah dikerjakan oleh **Ega Fiandra Pratama**:
+
+---
+
+## 🚀 Rincian fitur yang telah dikerjakan oleh **Ahmad Zufar Fathoni**:
