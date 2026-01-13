@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 import 'models.dart';
+import 'services/order_service.dart';
 
 class OrderStatusScreen extends StatefulWidget {
   const OrderStatusScreen({super.key});
@@ -11,66 +12,25 @@ class OrderStatusScreen extends StatefulWidget {
 }
 
 class _OrderStatusScreenState extends State<OrderStatusScreen> {
-  // Dummy order data
-  final List<Order> orders = [
-    Order(
-      id: 'ORD-001',
-      items: [
-        CartItem(
-          menuItem: MenuItem(
-            id: '1',
-            name: 'Sate Ayam',
-            category: 'Sate',
-            meat: 'Ayam',
-            price: 35000,
-            description: 'Sate ayam empuk dengan bumbu kacang yang lezat',
-            imageUrl: 'assets/sate_ayam.png',
-          ),
-          quantity: 2,
-        ),
-      ],
-      status: 'confirmed', // 'pending', 'confirmed', 'completed', 'cancelled'
-      deliveryAddress: 'Jl. Merdeka No. 123, Yogyakarta',
-      paymentMethod: 'transfer',
-      totalPrice: 70000 + 10000, // subtotal + ongkir
-      orderDate: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    Order(
-      id: 'ORD-002',
-      items: [
-        CartItem(
-          menuItem: MenuItem(
-            id: '2',
-            name: 'Sate Sapi',
-            category: 'Sate',
-            meat: 'Sapi',
-            price: 45000,
-            description: 'Sate daging sapi premium dengan bumbu tradisional',
-            imageUrl: 'assets/sate_sapi.png',
-          ),
-          quantity: 1,
-        ),
-        CartItem(
-          menuItem: MenuItem(
-            id: '5',
-            name: 'Tongseng Sapi',
-            category: 'Tongseng',
-            meat: 'Sapi',
-            price: 42000,
-            description: 'Tongseng daging sapi empuk dengan kuah gurih',
-            imageUrl: 'assets/tongseng_sapi.png',
-          ),
-          quantity: 2,
-        ),
-      ],
-      status: 'completed',
-      deliveryAddress: 'Jl. Merdeka No. 123, Yogyakarta',
-      paymentMethod: 'qris',
-      totalPrice: 45000 + 84000 + 10000,
-      orderDate: DateTime.now().subtract(const Duration(days: 5)),
-      completedDate: DateTime.now().subtract(const Duration(days: 4)),
-    ),
-  ];
+  final OrderService _orderService = OrderService();
+  List<Order> _orders = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    final orders = await _orderService.getHistory();
+    if (mounted) {
+      setState(() {
+        _orders = orders;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,15 +66,17 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             ],
           ),
         ),
-        body: TabBarView(
+        body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : TabBarView(
           children: [
             _buildOrderList(
-              orders.where((o) => o.status != 'completed').toList(),
-              isEmpty: orders.where((o) => o.status != 'completed').isEmpty,
+              _orders.where((o) => o.status != 'completed' && o.status != 'cancelled').toList(),
+              isEmpty: _orders.where((o) => o.status != 'completed' && o.status != 'cancelled').isEmpty,
             ),
             _buildOrderList(
-              orders.where((o) => o.status == 'completed').toList(),
-              isEmpty: orders.where((o) => o.status == 'completed').isEmpty,
+              _orders.where((o) => o.status == 'completed' || o.status == 'cancelled').toList(),
+              isEmpty: _orders.where((o) => o.status == 'completed' || o.status == 'cancelled').isEmpty,
             ),
           ],
         ),

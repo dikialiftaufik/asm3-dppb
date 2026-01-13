@@ -1,23 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
+import 'services/reservation_service.dart';
+import 'models/reservation_model.dart';
 
-class MyReservationScreen extends StatelessWidget {
-  // REVISI: Tambahkan parameter ini
+class MyReservationScreen extends StatefulWidget {
   final int initialIndex;
 
   const MyReservationScreen({super.key, this.initialIndex = 0});
 
   @override
+  State<MyReservationScreen> createState() => _MyReservationScreenState();
+}
+
+class _MyReservationScreenState extends State<MyReservationScreen> {
+  final ReservationService _reservationService = ReservationService();
+  List<ReservationModel> _allReservations = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReservations();
+  }
+
+  Future<void> _fetchReservations() async {
+    final reservations = await _reservationService.getUserReservations();
+    if (mounted) {
+      setState(() {
+        _allReservations = reservations;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Filter logic
+    final activeReservations = _allReservations.where((r) => 
+      r.status.toLowerCase() != 'completed' && r.status.toLowerCase() != 'cancelled'
+    ).toList();
+    
+    final historyReservations = _allReservations.where((r) => 
+      r.status.toLowerCase() == 'completed' || r.status.toLowerCase() == 'cancelled'
+    ).toList();
+
     return DefaultTabController(
       length: 2,
-      initialIndex: initialIndex, // Pakai parameter di sini
+      initialIndex: widget.initialIndex,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: Text(
-            initialIndex == 0 ? 'Reservasi Berlangsung' : 'Riwayat Reservasi',
+            'Reservasi Saya', 
             style: GoogleFonts.poppins(color: Colors.white),
           ),
           automaticallyImplyLeading: false, 
@@ -33,10 +68,12 @@ class MyReservationScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : TabBarView(
           children: [
-            _ReservationList(status: 'active'),
-            _ReservationList(status: 'history'),
+            _ReservationList(reservations: activeReservations, isHistory: false),
+            _ReservationList(reservations: historyReservations, isHistory: true),
           ],
         ),
       ),
@@ -44,20 +81,31 @@ class MyReservationScreen extends StatelessWidget {
   }
 }
 
-// Widget List Bawahnya (Tidak Berubah)
 class _ReservationList extends StatelessWidget {
-  final String status;
-  const _ReservationList({required this.status});
+  final List<ReservationModel> reservations;
+  final bool isHistory;
+
+  const _ReservationList({
+    required this.reservations,
+    required this.isHistory,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isHistory = status == 'history';
-    final itemCount = isHistory ? 5 : 2; 
+    if (reservations.isEmpty) {
+      return Center(
+        child: Text(
+          isHistory ? 'Belum ada riwayat reservasi.' : 'Tidak ada reservasi aktif.',
+          style: GoogleFonts.poppins(color: Colors.grey),
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: itemCount,
+      itemCount: reservations.length,
       itemBuilder: (context, index) {
+        final reservation = reservations[index];
         return Card(
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -71,7 +119,7 @@ class _ReservationList extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Meja No. ${index + 10}',
+                      'Meja No. ${reservation.id}', // Using ID as table number placeholder
                       style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     Container(
@@ -81,7 +129,7 @@ class _ReservationList extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        isHistory ? 'Selesai' : 'Dikonfirmasi',
+                        reservation.status.toUpperCase(),
                         style: GoogleFonts.poppins(
                           color: isHistory ? Colors.grey : AppColors.primary,
                           fontSize: 12,
@@ -93,11 +141,11 @@ class _ReservationList extends StatelessWidget {
                 ),
                 const Divider(),
                 const SizedBox(height: 8),
-                _buildRowInfo(Icons.calendar_today, '07 Des 2025'),
+                _buildRowInfo(Icons.calendar_today, reservation.date),
                 const SizedBox(height: 4),
-                _buildRowInfo(Icons.access_time, '19:00 WIB'),
+                _buildRowInfo(Icons.access_time, reservation.time),
                 const SizedBox(height: 4),
-                _buildRowInfo(Icons.people, '4 Orang'),
+                _buildRowInfo(Icons.people, '${reservation.partySize} Orang'),
               ],
             ),
           ),

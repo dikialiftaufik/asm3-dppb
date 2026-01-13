@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
+import 'services/reservation_service.dart';
 
 class ReservationFormScreen extends StatefulWidget {
   const ReservationFormScreen({super.key});
@@ -11,6 +12,8 @@ class ReservationFormScreen extends StatefulWidget {
 
 class _ReservationFormScreenState extends State<ReservationFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final ReservationService _reservationService = ReservationService();
+  bool _isLoading = false;
   
   // Controllers
   final TextEditingController _nameController = TextEditingController();
@@ -39,7 +42,8 @@ class _ReservationFormScreenState extends State<ReservationFormScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+        // Format YYYY-MM-DD for backend
+        _dateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -49,7 +53,7 @@ class _ReservationFormScreenState extends State<ReservationFormScreen> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-       builder: (context, child) {
+      builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(primary: AppColors.primary),
@@ -60,7 +64,9 @@ class _ReservationFormScreenState extends State<ReservationFormScreen> {
     );
     if (picked != null) {
       setState(() {
-        _timeController.text = picked.format(context);
+         // Format HH:mm for backend
+        final localizations = MaterialLocalizations.of(context);
+        _timeController.text = localizations.formatTimeOfDay(picked, alwaysUse24HourFormat: true);
       });
     }
   }
@@ -108,16 +114,41 @@ class _ReservationFormScreenState extends State<ReservationFormScreen> {
     );
   }
 
-  void _processReservation() {
-    // Simulasi sukses
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Reservasi Berhasil Diajukan!'), 
-        backgroundColor: Colors.green
-      ),
+  Future<void> _processReservation() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final success = await _reservationService.createReservation(
+      name: _nameController.text,
+      date: _dateController.text,
+      time: _timeController.text,
+      partySize: _selectedPerson!,
+      notes: _notesController.text,
     );
-    // Kembali ke halaman Home
-    Navigator.pop(context);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reservasi Berhasil Diajukan!'), 
+            backgroundColor: Colors.green
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal mengajukan reservasi. Coba lagi.'), 
+            backgroundColor: Colors.red
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -206,14 +237,16 @@ class _ReservationFormScreenState extends State<ReservationFormScreen> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: _isLoading ? null : () {
                     if (_formKey.currentState!.validate()) {
                       // Panggil Alert Dialog Konfirmasi
                       _showConfirmationDialog();
                     }
                   },
                   style: AppStyles.primaryButtonStyle,
-                  child: const Text('Buat Reservasi'),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Buat Reservasi'),
                 ),
               ),
             ],
