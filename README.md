@@ -108,6 +108,66 @@ Modul ini menangani keamanan akses pengguna mulai dari masuk hingga pemulihan ak
 
 ## 🚀 Rincian fitur yang telah dikerjakan oleh **Ega Fiandra Pratama**:
 
+### 1. Halaman Utama (Home Screen)
+
+* **Deskripsi:** Halaman utama aplikasi yang menampilkan navigasi ke berbagai fitur utama seperti katalog menu, notifikasi, dan profil.
+* **Implementasi UI:**
+    * **AppBar:** Dengan judul "The Komars" dan ikon untuk katalog menu serta notifikasi.
+    * **Body:** Konten utama dengan tombol navigasi ke fitur-fitur seperti reservasi, menu, dan feedback.
+* **Logika & Navigasi:**
+    * Menggunakan `Navigator.push` untuk berpindah ke halaman lain seperti `MenuCatalogScreen` dan `NotificationScreen`.
+* **Integrasi API:**
+    * Menggunakan `ApiServiceEga.getMenu()` untuk mengambil data menu jika diperlukan di masa depan.
+
+### 2. Layar Utama (Main Screen)
+
+* **Deskripsi:** Layar utama dengan navigasi bottom navigation bar untuk mengakses berbagai halaman aplikasi.
+* **Implementasi UI:**
+    * **BottomNavigationBar:** Dengan 5 item: Menu, Reservasi Berlangsung, Home, Riwayat Reservasi, Feedback.
+    * **IndexedStack:** Untuk menampilkan halaman sesuai indeks yang dipilih.
+* **Logika & Navigasi:**
+    * Menggunakan `setState` untuk mengubah `_selectedIndex` dan menampilkan halaman yang sesuai.
+    * Halaman-halaman yang ditampilkan: `MenuScreen`, `MyReservationScreen` (untuk berlangsung dan riwayat), `HomeScreen`, `FeedbackScreen`.
+
+### 3. Reservasi Saya (My Reservation Screen)
+
+* **Deskripsi:** Menampilkan daftar reservasi pengguna yang sedang berlangsung dan riwayat reservasi.
+* **Implementasi UI:**
+    * **TabBar:** Dengan dua tab: "Berlangsung" dan "Riwayat".
+    * **TabBarView:** Menampilkan `_ReservationList` untuk setiap status.
+    * **ListView:** Untuk menampilkan daftar reservasi dengan detail seperti nama, tanggal, status.
+* **Logika & Navigasi:**
+    * Menggunakan `DefaultTabController` dengan `initialIndex` berdasarkan parameter.
+    * Widget `_ReservationList` menangani tampilan daftar berdasarkan status ('active' atau 'history').
+* **Integrasi API:**
+    * Menggunakan `ApiServiceEga.getReservations()` untuk mengambil data reservasi dari server.
+
+### 4. Status Pesanan (Order Status Screen)
+
+* **Deskripsi:** Menampilkan status pesanan pengguna dengan detail lengkap seperti item, alamat pengiriman, metode pembayaran, dan total harga.
+* **Implementasi UI:**
+    * **ListView:** Untuk menampilkan daftar pesanan.
+    * **Card:** Untuk setiap pesanan dengan informasi detail.
+    * **Status Indicator:** Menggunakan warna dan ikon untuk menunjukkan status (pending, confirmed, completed, cancelled).
+* **Logika & Navigasi:**
+    * Menggunakan dummy data untuk demonstrasi, siap diintegrasikan dengan API.
+* **Integrasi API:**
+    * Menggunakan `ApiServiceEga.getOrders()` untuk mengambil data pesanan dari server.
+
+### 5. Form Reservasi (Reservation Form Screen)
+
+* **Deskripsi:** Formulir untuk membuat reservasi baru dengan input detail seperti nama, email, telepon, tanggal, waktu, jumlah orang, dan pesan tambahan.
+* **Implementasi UI:**
+    * **Form:** Dengan `TextFormField` untuk input teks dan `DropdownButton` untuk pilihan.
+    * **DatePicker & TimePicker:** Untuk memilih tanggal dan waktu reservasi.
+    * **ElevatedButton:** Untuk submit reservasi.
+* **Logika & Navigasi:**
+    * Validasi input sebelum submit.
+    * Navigasi kembali ke halaman sebelumnya setelah berhasil.
+* **Integrasi API:**
+    * Menggunakan `ApiServiceEga.createReservation()` untuk mengirim data reservasi ke server.
+
 ---
+
 
 ## 🚀 Rincian fitur yang telah dikerjakan oleh **Ahmad Zufar Fathoni**:
